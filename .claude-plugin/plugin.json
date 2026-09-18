@@ -1,0 +1,9 @@
+{
+  "name": "latex-editor",
+  "displayName": "LaTeX Editor",
+  "description": "Turns Claude Code into a LaTeX collaborator for scientific writing: it handles citations, references, maths, floats, nomenclature and the build, and is mechanically prevented from writing a single word of the author's prose.",
+  "version": "0.1.0",
+  "author": { "name": "dgrealy" },
+  "repository": "https://github.com/dgrealy/latex-editor",
+  "license": "MIT"
+}

@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "deny": [
+      "Edit(.claude/**)",
+      "Write(.claude/**)",
+      "Edit(.latex-editor/state.json)",
+      "Write(.latex-editor/state.json)",
+      "Edit(.devcontainer/**)",
+      "Write(.devcontainer/**)",
+      "Edit(.githooks/**)",
+      "Write(.githooks/**)",
+      "Bash(git config *)",
+      "Bash(git push --force*)"
+    ]
+  }
+}

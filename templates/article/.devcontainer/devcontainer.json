@@ -1,0 +1,23 @@
+{
+  "name": "LaTeX authoring",
+  "build": { "dockerfile": "Dockerfile" },
+
+  // Only this repository is mounted. Claude cannot see anything else on the
+  // machine -- not your home directory, not your other projects.
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+  "workspaceFolder": "/workspace",
+
+  // A named volume keeps the Claude Code login across rebuilds without
+  // mounting your home directory into the container.
+  "mounts": [
+    "source=claude-code-config,target=/home/vscode/.claude,type=volume"
+  ],
+  "postCreateCommand": "sudo chown -R vscode:vscode /home/vscode/.claude",
+  "remoteUser": "vscode",
+
+  "customizations": {
+    "vscode": {
+      "extensions": ["James-Yu.latex-workshop", "anthropic.claude-code"]
+    }
+  }
+}

@@ -1,0 +1,32 @@
+# How this document is built and who owns which part of it.
+project:
+  main: main.tex
+  engine: pdflatex        # pdflatex | xelatex | lualatex
+  bib: bib/references.bib
+  bib_backend: biber      # biber | bibtex
+
+figures:
+  format: pdf             # pdf | eps -- what the plot workflow emits
+  src: figures/src
+  out: figures/out
+  width: 8.4cm            # the target journal's column width
+
+prose:
+  # "author" keeps captions in the author's hands; "claude" hands them over.
+  captions: author
+  # Files Claude owns outright, prose and all. Everything else is the author's.
+  claude_paths:
+    - bib/**
+    - figures/**
+    - tables/**
+    - frontmatter/**
+    - build/**
+  sentence_per_line: true
+
+git:
+  auto_commit: true
+  prefix: "[claude]"
+
+review:
+  spellcheck: hunspell
+  dict: .latex-editor/dictionary.txt
