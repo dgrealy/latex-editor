@@ -1,0 +1,12 @@
+{
+  "name": "dgrealy-latex",
+  "owner": { "name": "dgrealy" },
+  "description": "LaTeX authoring tools for Claude Code.",
+  "plugins": [
+    {
+      "name": "latex-editor",
+      "source": "./",
+      "description": "Scientific LaTeX authoring with a hard guarantee that the author writes all prose."
+    }
+  ]
+}

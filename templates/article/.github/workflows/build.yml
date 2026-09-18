@@ -1,0 +1,46 @@
+name: Build PDF
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install TeX Live
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            texlive-latex-recommended texlive-latex-extra texlive-science \
+            texlive-fonts-recommended texlive-bibtex-extra texlive-pictures \
+            latexmk biber chktex
+
+      - name: Build
+        run: latexmk -pdf -interaction=nonstopmode -file-line-error main.tex
+
+      # A PDF that builds but has "??" where a figure number should be is not a
+      # PDF worth sending anyone.
+      - name: Fail on unresolved references or citations
+        run: |
+          log=build/main.log
+          if grep -qE "Reference .* undefined|Citation .* undefined|multiply defined" "$log"; then
+            echo "::error::Unresolved references or citations:"
+            grep -E "Reference .* undefined|Citation .* undefined|multiply defined" "$log"
+            exit 1
+          fi
+          echo "All references and citations resolve."
+
+      - name: Report overfull boxes
+        if: always()
+        run: grep -c "Overfull \\\\hbox" build/main.log || echo "0 overfull hboxes"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: manuscript-pdf
+          path: build/main.pdf
+          if-no-files-found: error

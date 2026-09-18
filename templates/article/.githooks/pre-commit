@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# Fast checks only -- the full compile runs in CI, so committing stays quick.
+# Install with:  git config core.hooksPath .githooks
+set -uo pipefail
+
+root="$(git rev-parse --show-toplevel)"
+cd "$root" || exit 0
+
+scripts=""
+if [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && [ -d "$CLAUDE_PLUGIN_ROOT/scripts" ]; then
+  scripts="$CLAUDE_PLUGIN_ROOT/scripts"
+elif [ -f .latex-editor/scripts-path ]; then
+  scripts="$(cat .latex-editor/scripts-path)"
+fi
+
+if [ -z "$scripts" ] || [ ! -d "$scripts" ]; then
+  echo "pre-commit: latex-editor scripts not found; skipping checks." >&2
+  exit 0
+fi
+
+status=0
+bib="$(ls bib/*.bib 2>/dev/null | head -1)"
+
+echo "pre-commit: cross-references"
+python3 "$scripts/ref_check.py" --root . ${bib:+--bib "$bib"} || status=1
+
+if [ -n "$bib" ]; then
+  echo "pre-commit: bibliography"
+  python3 "$scripts/bib_lint.py" "$bib" --provenance .latex-editor/bib-provenance.json || status=1
+fi
+
+changed="$(git diff --cached --name-only --diff-filter=ACM -- '*.tex')"
+if [ -n "$changed" ]; then
+  echo "pre-commit: sentence-per-line"
+  # Advisory: report, never block, since reflowing is the author's call.
+  python3 "$scripts/reflow.py" --check $changed || true
+fi
+
+if [ "$status" -ne 0 ]; then
+  echo
+  echo "pre-commit: problems above. Commit anyway with --no-verify if you meant to."
+fi
+exit "$status"
