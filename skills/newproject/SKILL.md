@@ -22,7 +22,7 @@ to run inside a repository that already has some content.
 | `tables/`, `figures/` | Claude | floats and plot sources |
 | `.latex-editor.yml` | shared | engine, paths, figure format, caption policy |
 | `.vscode/` | — | Ctrl+S builds and refreshes the PDF |
-| `.devcontainer/` | — | TeX Live and Claude Code, with only this repo mounted |
+| `.devcontainer/` | — | TeX Live, Claude Code and a firewall, with only this repo mounted |
 | `.github/workflows/build.yml` | — | compiles on push, fails on unresolved refs |
 | `.githooks/pre-commit` | — | fast reference and bibliography checks |
 
@@ -30,7 +30,9 @@ to run inside a repository that already has some content.
 
 1. `git init` if needed, then `git config core.hooksPath .githooks`.
 2. Tell the author to reopen the folder in the dev container (VS Code will
-   offer). The first build takes a few minutes; after that it is cached.
+   offer). The first build takes 10–20 minutes and a few GB; after that it is
+   cached. The container firewall allows GitHub, npm, Anthropic, the VS Code
+   marketplace and the reference APIs, and blocks everything else.
 3. Ask which journal or university guidelines apply, and whether the engine
    should be `pdflatex`, `xelatex` or `lualatex` — then set them in
    `.latex-editor.yml`. Do not guess a journal's requirements; if the author

@@ -1,23 +1,60 @@
 {
-  "name": "LaTeX authoring",
-  "build": { "dockerfile": "Dockerfile" },
-
-  // Only this repository is mounted. Claude cannot see anything else on the
-  // machine -- not your home directory, not your other projects.
-  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
-  "workspaceFolder": "/workspace",
-
-  // A named volume keeps the Claude Code login across rebuilds without
-  // mounting your home directory into the container.
-  "mounts": [
-    "source=claude-code-config,target=/home/vscode/.claude,type=volume"
+  "name": "LaTeX authoring (sandboxed)",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "args": {
+      "TZ": "${localEnv:TZ:Europe/Dublin}",
+      "CLAUDE_CODE_VERSION": "latest",
+      "GIT_DELTA_VERSION": "0.18.2",
+      "ZSH_IN_DOCKER_VERSION": "1.2.0"
+    }
+  },
+  // Needed so the container can rewrite its own firewall rules at start-up.
+  "runArgs": [
+    "--cap-add=NET_ADMIN",
+    "--cap-add=NET_RAW"
   ],
-  "postCreateCommand": "sudo chown -R vscode:vscode /home/vscode/.claude",
-  "remoteUser": "vscode",
-
+  "remoteUser": "node",
   "customizations": {
     "vscode": {
-      "extensions": ["James-Yu.latex-workshop", "anthropic.claude-code"]
+      "extensions": [
+        "anthropic.claude-code",
+        // Ctrl+S -> build -> PDF refresh. Extensions install inside the
+        // container, so this list is what actually gets installed.
+        "James-Yu.latex-workshop",
+        // How you review Claude's [claude] commits inline.
+        "eamodio.gitlens"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "terminal.integrated.profiles.linux": {
+          "bash": {
+            "path": "bash",
+            "icon": "terminal-bash"
+          },
+          "zsh": {
+            "path": "zsh"
+          }
+        }
+      }
     }
-  }
+  },
+  "mounts": [
+    "source=claude-code-bashhistory-${devcontainerId},target=/commandhistory,type=volume",
+    // Keeps the Claude Code login across rebuilds without mounting your home
+    // directory. ${devcontainerId} scopes it to this project, so you sign in
+    // once per paper; drop it to share one login across all of them.
+    "source=claude-code-config-${devcontainerId},target=/home/node/.claude,type=volume"
+  ],
+  "containerEnv": {
+    "NODE_OPTIONS": "--max-old-space-size=4096",
+    "CLAUDE_CONFIG_DIR": "/home/node/.claude",
+    "POWERLEVEL9K_DISABLE_GITSTATUS": "true"
+  },
+  // Only this repository is mounted. Claude cannot see anything else on the
+  // machine -- not your home directory, not your other projects.
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=delegated",
+  "workspaceFolder": "/workspace",
+  "postStartCommand": "sudo /usr/local/bin/init-firewall.sh",
+  "waitFor": "postStartCommand"
 }
