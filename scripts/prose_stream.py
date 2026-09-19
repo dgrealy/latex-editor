@@ -16,18 +16,27 @@ from __future__ import annotations
 import re
 from typing import Iterable, NamedTuple
 
-from pylatexenc.latexwalker import (
-    LatexCharsNode,
-    LatexCommentNode,
-    LatexEnvironmentNode,
-    LatexGroupNode,
-    LatexMacroNode,
-    LatexMathNode,
-    LatexSpecialsNode,
-    LatexWalker,
-    get_default_latex_context_db,
-)
-from pylatexenc.macrospec import MacroSpec
+try:
+    from pylatexenc.latexwalker import (
+        LatexCharsNode,
+        LatexCommentNode,
+        LatexEnvironmentNode,
+        LatexGroupNode,
+        LatexMacroNode,
+        LatexMathNode,
+        LatexSpecialsNode,
+        LatexWalker,
+        get_default_latex_context_db,
+    )
+    from pylatexenc.macrospec import MacroSpec
+except ImportError as exc:  # pragma: no cover - environment problem, not logic
+    # Say what is missing and how to fix it. A stack trace here tells the author
+    # nothing they can act on, and this tool asks Claude to do better than that.
+    raise ImportError(
+        "latex-editor needs pylatexenc to read LaTeX. Install it with:\n"
+        "    pip install pylatexenc\n"
+        "Inside the dev container it is already present; on a bare host it is not."
+    ) from exc
 
 # --------------------------------------------------------------------------
 # Classification tables

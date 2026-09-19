@@ -28,7 +28,9 @@ to run inside a repository that already has some content.
 
 ## After scaffolding
 
-1. `git init` if needed, then `git config core.hooksPath .githooks`.
+1. `git init` if needed, then `git config core.hooksPath .githooks`. The hook runs
+   its checks only inside the dev container; on the host it stands aside, so
+   commits made before the container is built are unchecked.
 2. Tell the author to reopen the folder in the dev container (VS Code will
    offer). The first build takes 10–20 minutes and a few GB; after that it is
    cached. The container firewall allows GitHub, npm, Anthropic, the VS Code

@@ -61,3 +61,8 @@ addresses it resolved at start-up, and Crossref and arXiv sit behind CDNs that
 rotate them. If a lookup that worked earlier starts failing, say so and suggest
 re-running `sudo /usr/local/bin/init-firewall.sh`. Never treat an unreachable
 API as licence to write the entry from memory.
+
+**The git hooks only run inside the container.** `.githooks/pre-commit` stands
+aside on the host, where the toolchain is absent, so a commit made outside the
+container is unchecked. If the author mentions committing from their laptop,
+that is why they saw no output.
