@@ -43,6 +43,34 @@ Open the folder in VS Code and reopen it in the dev container. Then **Ctrl+S**
 builds the document and refreshes the PDF in the next tab, the way Overleaf
 does; **Ctrl+Alt+J** jumps the PDF to wherever your cursor is.
 
+## The container
+
+Each document gets its own dev container, scaffolded into the repo and **owned by
+it from then on** — a plugin update never rewrites a project's build environment,
+so a thesis started in 2026 still builds the way it always did.
+
+It is built on Anthropic's Claude Code sandbox: a `node:20` base, and an
+iptables firewall that drops all outbound traffic except GitHub, npm, Anthropic,
+the VS Code marketplace and the reference APIs (Crossref, arXiv, OpenAlex,
+Semantic Scholar). Only the repo is mounted — no home directory, no other
+projects. On top of that sits TeX Live with the journal classes, `latexmk`,
+`biber`, `chktex`, `latexindent`, `latexdiff`, hunspell, and the prose guard's
+Python dependencies.
+
+Two consequences worth knowing:
+
+- **`sudo` is restricted to the firewall script.** A LaTeX package that is not in
+  the image cannot be installed mid-session. Claude reports it as a blocker; you
+  add it to the Dockerfile and rebuild. The build environment stays in git rather
+  than accumulating undocumented state.
+- **The firewall allowlists IP addresses resolved at start-up**, and the reference
+  APIs sit behind CDNs that rotate them, so lookups can start failing during a
+  long session. Re-run `sudo /usr/local/bin/init-firewall.sh`. If one of those
+  APIs is unreachable at start-up the container still comes up — `cite` reports a
+  blocker rather than inventing a DOI.
+
+The first build takes 10–20 minutes and a few GB; after that it is cached.
+
 ## What Claude may and may not touch
 
 | Claude writes | The author writes |

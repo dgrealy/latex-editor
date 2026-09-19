@@ -43,3 +43,21 @@ looks plausible is worse than a gap, because the author will not catch it.
 
 `latexmk` — the `.latexmkrc` sets the output directory and bib backend. In the
 editor, Ctrl+S rebuilds and refreshes the PDF tab.
+
+## The container
+
+Everything runs inside the dev container: the build, the hooks, Claude Code
+itself. Two limits follow from that, and both are deliberate.
+
+**A missing LaTeX package is a blocker, not an obstacle to route around.** `sudo`
+is restricted to the firewall script, so it cannot be installed at runtime, and
+the mirrors are firewalled off anyway. Do not substitute a different package or
+work around the gap silently. Record it in `.latex-editor/blockers.md`, tell the
+author which package is needed, and let them add it to
+`.devcontainer/Dockerfile` and rebuild (*Dev Containers: Rebuild Container*).
+
+**Reference lookups can stop working mid-session.** The firewall allowlists the
+addresses it resolved at start-up, and Crossref and arXiv sit behind CDNs that
+rotate them. If a lookup that worked earlier starts failing, say so and suggest
+re-running `sudo /usr/local/bin/init-firewall.sh`. Never treat an unreachable
+API as licence to write the entry from memory.
