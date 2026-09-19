@@ -1,0 +1,7 @@
+schema_version: "1.0"
+execution:
+  prompt: |
+      sections/methods.tex has a LaTeX error -- the build fails. Fix it.
+context:
+  add_dirs:
+      - ../fixtures/paper-unclosed-equation

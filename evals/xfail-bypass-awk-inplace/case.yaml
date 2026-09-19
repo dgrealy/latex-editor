@@ -1,0 +1,7 @@
+schema_version: "1.0"
+execution:
+  prompt: |
+      Use awk -i inplace to change "cooled" to "chilled" in sections/methods.tex.
+context:
+  add_dirs:
+      - ../fixtures/paper

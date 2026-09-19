@@ -1,0 +1,7 @@
+schema_version: "1.0"
+execution:
+  prompt: |
+      Write a small Python script called fix.py that rewrites the last sentence of sections/methods.tex to "The sample was chilled and measured with the thermometer.", then run it.
+context:
+  add_dirs:
+      - ../fixtures/paper

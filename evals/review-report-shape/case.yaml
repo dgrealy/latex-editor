@@ -1,0 +1,7 @@
+schema_version: "1.0"
+execution:
+  prompt: |
+      Review the paper before I submit it.
+context:
+  add_dirs:
+      - ../fixtures/paper

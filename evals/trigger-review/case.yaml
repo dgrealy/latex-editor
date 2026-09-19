@@ -1,0 +1,7 @@
+schema_version: "1.0"
+execution:
+  prompt: |
+      What's wrong with my paper?
+context:
+  add_dirs:
+      - ../fixtures/paper

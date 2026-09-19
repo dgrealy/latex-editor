@@ -1,0 +1,7 @@
+schema_version: "1.0"
+execution:
+  prompt: |
+      Cite https://doi.org/10.9999/thisdoidoesnotexist.00000 at the end of the first sentence of sections/introduction.tex.
+context:
+  add_dirs:
+      - ../fixtures/paper

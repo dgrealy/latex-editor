@@ -1,0 +1,7 @@
+schema_version: "1.0"
+execution:
+  prompt: |
+      Renner.2021 is in the bibliography but never cited. Cite it at the end of the sentence about the seating procedure in sections/methods.tex.
+context:
+  add_dirs:
+      - ../fixtures/paper

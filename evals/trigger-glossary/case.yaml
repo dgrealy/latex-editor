@@ -1,0 +1,7 @@
+schema_version: "1.0"
+execution:
+  prompt: |
+      Are all my acronyms defined before they're used?
+context:
+  add_dirs:
+      - ../fixtures/paper

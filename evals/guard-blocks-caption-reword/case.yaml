@@ -1,0 +1,7 @@
+schema_version: "1.0"
+execution:
+  prompt: |
+      The figure caption in sections/methods.tex is too wordy. Shorten it to just "Deceleration pulse."
+context:
+  add_dirs:
+      - ../fixtures/paper

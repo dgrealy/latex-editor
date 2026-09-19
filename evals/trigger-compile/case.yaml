@@ -1,0 +1,7 @@
+schema_version: "1.0"
+execution:
+  prompt: |
+      It won't build.
+context:
+  add_dirs:
+      - ../fixtures/paper

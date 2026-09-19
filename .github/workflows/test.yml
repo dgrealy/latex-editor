@@ -1,0 +1,54 @@
+name: Test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  unit:
+    name: Unit tests and catalogue
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - name: Unit tests
+        run: python3 -m pytest scripts/tests -q
+      - name: Eval catalogue is up to date
+        run: python3 evals/catalogue.py --check
+
+  evals:
+    name: Eval suite
+    # Costs money and is not deterministic enough to gate a merge on.
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      # The guard fails closed without this, and would then refuse every .tex
+      # edit -- which passes the blocking cases for entirely the wrong reason.
+      - run: pip install -r requirements.txt
+      - run: npm install -g @anthropic-ai/claude-code
+      - name: Run evals
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        # xfail-* are known holes in bash_guard and are expected to fail.
+        run: |
+          claude plugin eval . \
+            --case '[!x]*' \
+            --trust-plugin --runs 1 --ablation none --no-publish \
+            --allow-tools Edit,Write,Read,Bash,WebFetch \
+            --concurrency 4 --threshold 0.8 \
+            --json eval-results.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eval-results
+          path: |
+            eval-results.json
+            evals/results/
