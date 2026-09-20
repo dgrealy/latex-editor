@@ -21,24 +21,30 @@ to run inside a repository that already has some content.
 | `frontmatter/` | Claude | acronyms and nomenclature |
 | `tables/`, `figures/` | Claude | floats and plot sources |
 | `.latex-editor.yml` | shared | engine, paths, figure format, caption policy |
-| `.vscode/` | — | Ctrl+S builds and refreshes the PDF |
+| `.vscode/` | — | Ctrl+S builds and refreshes the PDF; three UI presets |
 | `.devcontainer/` | — | TeX Live, Claude Code and a firewall, with only this repo mounted |
 | `.github/workflows/build.yml` | — | compiles on push, fails on unresolved refs |
 | `.githooks/pre-commit` | — | fast reference and bibliography checks |
 
 ## After scaffolding
 
-1. `git init` if needed, then `git config core.hooksPath .githooks`.
+1. `git init` if needed, then `git config core.hooksPath .githooks`. The hook runs
+   its checks only inside the dev container; on the host it stands aside, so
+   commits made before the container is built are unchecked.
 2. Tell the author to reopen the folder in the dev container (VS Code will
    offer). The first build takes 10–20 minutes and a few GB; after that it is
    cached. The container firewall allows GitHub, npm, Anthropic, the VS Code
    marketplace and the reference APIs, and blocks everything else.
-3. Ask which journal or university guidelines apply, and whether the engine
+3. Mention the UI presets: `minimal`, `writer` (the default) and `focus`, switched
+   with `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/ui_preset.py <name>`. Also mention
+   that the author never needs to run `git commit` — their writing is committed
+   before each prompt and Claude commits its own work.
+4. Ask which journal or university guidelines apply, and whether the engine
    should be `pdflatex`, `xelatex` or `lualatex` — then set them in
    `.latex-editor.yml`. Do not guess a journal's requirements; if the author
    does not have the guidelines to hand, record it in
    `.latex-editor/blockers.md`.
-4. Confirm the build works: `latexmk -pdf main.tex`.
+5. Confirm the build works: `latexmk -pdf main.tex`.
 
 ## Adapting the structure
 

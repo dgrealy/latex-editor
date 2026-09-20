@@ -41,6 +41,16 @@ def scaffold(target: Path, template: str, force: bool = False) -> list[Path]:
     hook = target / ".githooks" / "pre-commit"
     if hook.exists():
         hook.chmod(0o755)
+
+    # The template ships presets rather than a settings.json, so apply one.
+    if not (target / ".vscode" / "settings.json").exists():
+        try:
+            import ui_preset
+
+            ui_preset.apply(target, "writer")
+        except Exception:
+            pass  # the author can run ui_preset.py themselves
+
     return written
 
 

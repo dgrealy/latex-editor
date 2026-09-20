@@ -1,12 +1,10 @@
 {
-  // Ctrl+S builds and the PDF refreshes -- the Overleaf reflex, kept.
   "files.autoSave": "off",
   "latex-workshop.latex.autoBuild.run": "onSave",
   "latex-workshop.latex.recipe.default": "lastUsed",
   "latex-workshop.latex.outDir": "%DIR%/build",
   "latex-workshop.view.pdf.viewer": "tab",
   "latex-workshop.synctex.afterBuild.enabled": true,
-  "latex-workshop.message.badbox.show": false,
   "latex-workshop.latex.autoClean.run": "never",
   "latex-workshop.latex.tools": [
     {
@@ -21,7 +19,6 @@
   "latex-workshop.latex.recipes": [
     { "name": "latexmk", "tools": ["latexmk"] }
   ],
-  // One sentence per line: wrap visually, never in the file.
   "[latex]": {
     "editor.wordWrap": "on",
     "editor.formatOnSave": false,

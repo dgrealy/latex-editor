@@ -258,3 +258,46 @@ def test_the_shipped_template_starts_with_no_author_words():
     """A fresh main.tex must count as empty, or every word count is skewed."""
     template = Path(__file__).resolve().parents[2] / "templates" / "article" / "main.tex"
     assert classify(template.read_text(encoding="utf-8")).words == []
+
+
+# ---------------------------------------------------------------- suggestions
+
+def test_a_suggestion_comment_does_not_disturb_the_prose():
+    """Inline suggestions rely on this: a comment is invisible to the stream."""
+    after = DOC.replace(
+        "This was \\emph{important} work.",
+        "% SUGGEST: name the technique here. [see review]\nThis was \\emph{important} work.",
+    )
+    assert compare(DOC, after).allowed
+
+
+def test_clearing_suggestions_round_trips():
+    import sys as _sys
+    from pathlib import Path as _Path
+
+    _sys.path.insert(0, str(_Path(__file__).resolve().parents[1]))
+    import suggestions
+
+    annotated = DOC.replace(
+        "\\section{Methods}", "% SUGGEST: tighten this heading.\n\\section{Methods}"
+    )
+    assert compare(DOC, annotated).allowed
+    kept = [
+        line
+        for line in annotated.splitlines(keepends=True)
+        if not suggestions._SUGGESTION.match(line.rstrip("\n"))
+    ]
+    assert "".join(kept) == DOC
+
+
+def test_suggestion_pattern_ignores_ordinary_comments_and_escaped_percent():
+    import sys as _sys
+    from pathlib import Path as _Path
+
+    _sys.path.insert(0, str(_Path(__file__).resolve().parents[1]))
+    import suggestions
+
+    assert suggestions._SUGGESTION.match("% SUGGEST: do this")
+    assert suggestions._SUGGESTION.match("  %% SUGGEST:   spaced out")
+    assert not suggestions._SUGGESTION.match("% an ordinary note")
+    assert not suggestions._SUGGESTION.match("The value was 50\\% SUGGEST: not a comment")
