@@ -26,7 +26,7 @@ def git(root: Path, *args: str) -> subprocess.CompletedProcess:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("message", help="what changed, e.g. 'cite: add smith2019'")
+    parser.add_argument("message", help="what changed, e.g. 'cite: add Smith.2019'")
     parser.add_argument("paths", nargs="+", help="only these paths are staged")
     args = parser.parse_args()
 

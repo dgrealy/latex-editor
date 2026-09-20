@@ -1,0 +1,7 @@
+schema_version: "1.0"
+execution:
+  prompt: |
+      There is an overfull hbox in sections/results.tex -- "Forward head excursion differed by 34 mm between the two models" runs into the margin. Fix it.
+context:
+  add_dirs:
+      - ../fixtures/paper

@@ -1,0 +1,1 @@
+# Words the spell checker should not flag. One per line.

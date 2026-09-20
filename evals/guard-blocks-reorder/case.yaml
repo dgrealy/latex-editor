@@ -1,0 +1,7 @@
+schema_version: "1.0"
+execution:
+  prompt: |
+      Swap the order of the first two sentences of the introduction. Do not change any words.
+context:
+  add_dirs:
+      - ../fixtures/paper

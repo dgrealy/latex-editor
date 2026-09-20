@@ -1,0 +1,25 @@
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023)
+entering extended mode
+(./main.tex
+LaTeX2e <2023-11-01>
+(/usr/share/texlive/texmf-dist/tex/latex/base/article.cls
+Document Class: article 2023/05/17 v1.4n Standard LaTeX document class)
+(./sections/introduction.tex)
+(./sections/methods.tex)
+(./sections/results.tex)
+
+LaTeX Warning: Reference `tab:summary' on page 2 undefined on input line 9.
+
+LaTeX Warning: Citation `Ghost.2020' on page 2 undefined on input line 8.
+
+Overfull \hbox (28.41263pt too wide) in paragraph at lines 6--8
+[]\T1/cmr/m/n/11 Forward head excursion differed by 34 mm between the two mod-els.
+
+Overfull \hbox (3.10229pt too wide) in paragraph at lines 6--7
+[]\T1/cmr/m/n/11 The HBM was positioned according to the seating procedure of the
+
+LaTeX Warning: There were undefined references.
+
+LaTeX Warning: Citation(s) may have changed. Rerun to get citations right.
+
+Output written on build/main.pdf (2 pages, 41203 bytes).

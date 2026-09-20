@@ -34,7 +34,7 @@ RECOMMENDED = {"article": ["volume", "pages", "doi"]}
 
 _ENTRY = re.compile(r"@(\w+)\s*\{\s*([^,\s]+)\s*,(.*?)\n\}", re.DOTALL)
 _FIELD = re.compile(r"(\w+)\s*=\s*(\{.*?\}|\"[^\"]*\"|[^,\n]+)\s*,?", re.DOTALL)
-_KEY_SCHEME = re.compile(r"^[a-z][a-z-]*\d{4}[a-z0-9]*$")
+_KEY_SCHEME = re.compile(r"^[A-Z][A-Za-z-]*\.\d{4}[a-z]?$")
 _ACRONYM = re.compile(r"(?<![{\\])\b([A-Z]{2,})\b(?![}])")
 
 
@@ -107,7 +107,7 @@ def lint(text: str, provenance: dict | None = None) -> list[dict]:
             add(entry, "warning", f"acronym '{acronym}' in the title is not brace-protected")
 
         if not _KEY_SCHEME.match(key):
-            add(entry, "info", "key does not follow the authoryear scheme, e.g. smith2019")
+            add(entry, "info", "key does not follow the Author.Year scheme, e.g. Smith.2019")
 
         record = provenance.get(key)
         if record is None:

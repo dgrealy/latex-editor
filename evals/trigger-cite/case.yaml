@@ -1,0 +1,7 @@
+schema_version: "1.0"
+execution:
+  prompt: |
+      Is everything in my bibliography actually cited?
+context:
+  add_dirs:
+      - ../fixtures/paper

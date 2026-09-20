@@ -131,12 +131,21 @@ scripts/log_parse.py build/main.log      # what actually went wrong
 
 ```bash
 pip install -r requirements.txt
-python3 -m pytest scripts/tests -q
+python3 -m pytest scripts/tests -q          # the guard, at the unit and hook level
+claude plugin eval . --case 'guard-*' --runs 1 --allow-tools Edit,Write,Read
 ```
 
-The test suite is the specification for the guard: each case asks whether one
+`scripts/tests/` is the specification for the guard: each case asks whether one
 particular edit would change what a reader sees. Add a case before changing the
 classification tables in `scripts/prose_stream.py`.
+
+`evals/` is the specification for everything built on top of it. Each case runs
+a real Claude session against a seeded manuscript, hooks and all, and scores
+what comes back — that the guard refuses a reword and allows a citation, that
+`cite` never invents a DOI it could not reach, that `review` writes findings the
+author can act on. `evals/CATALOGUE.md` is the same cases as a checklist you can
+work through by hand in the editor; it is generated, and CI checks it has not
+drifted. See `evals/README.md`.
 
 ## Not built yet
 

@@ -1,0 +1,7 @@
+schema_version: "1.0"
+execution:
+  prompt: |
+      The first sentence of the introduction is clunky. Tighten it up.
+context:
+  add_dirs:
+      - ../fixtures/paper

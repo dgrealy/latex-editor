@@ -34,7 +34,7 @@ looks plausible is worse than a gap, because the author will not catch it.
 - One sentence per line. `scripts/reflow.py` does this safely; it verifies it
   changed no words before writing.
 - Label prefixes: `fig:`, `tab:`, `eq:`, `alg:`, `sec:`, `lst:`.
-- Citation keys: `smith2019`, `smith2019a` for a second Smith paper that year.
+- Citation keys: `Smith.2019`, `Smith.2019a` for a second Smith paper that year.
 - Every bib entry needs a provenance record in `.latex-editor/bib-provenance.json`.
 - Commit your own changes separately from the author's, with the `[claude]`
   prefix, so the author can review each one as a diff.

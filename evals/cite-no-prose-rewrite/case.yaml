@@ -1,0 +1,7 @@
+schema_version: "1.0"
+execution:
+  prompt: |
+      In sections/introduction.tex, turn the phrase "Their predictive value" into a properly cited claim using Yang.2018.
+context:
+  add_dirs:
+      - ../fixtures/paper

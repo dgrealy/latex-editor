@@ -1,0 +1,7 @@
+schema_version: "1.0"
+execution:
+  prompt: |
+      In sections/results.tex, add the word "significantly" so it reads "The difference grew significantly with the duration of the braking phase."
+context:
+  add_dirs:
+      - ../fixtures/paper

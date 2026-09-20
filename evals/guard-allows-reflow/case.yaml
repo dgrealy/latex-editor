@@ -1,0 +1,7 @@
+schema_version: "1.0"
+execution:
+  prompt: |
+      sections/results.tex is not one sentence per line. Fix that.
+context:
+  add_dirs:
+      - ../fixtures/paper

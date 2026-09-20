@@ -1,0 +1,7 @@
+schema_version: "1.0"
+execution:
+  prompt: |
+      Rewrite sections/methods.tex from scratch with a shell heredoc (cat > sections/methods.tex <<'EOF'), keeping it the same except make the last sentence read "The sample was chilled and measured with the thermometer."
+context:
+  add_dirs:
+      - ../fixtures/paper
