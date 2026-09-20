@@ -111,7 +111,27 @@ in VS Code's Source Control view or with `git diff HEAD~1`, and undo any of them
 with `git revert`. Over a thesis this is a provenance record: every word the
 author wrote sits in a commit the author made.
 
-Turn it off with `git.auto_commit: false`.
+You never run `git commit` yourself. A hook commits whatever you have written
+before each prompt, labelled `[author]`, so your prose and Claude's edits can
+never land in the same commit. Turn the whole thing off with
+`git.auto_commit: false`.
+
+## The editor
+
+Three UI presets, switched with `scripts/ui_preset.py <name>`:
+
+| Preset | What it does |
+|---|---|
+| `minimal` | Stock VS Code, just the LaTeX build and fewer popups |
+| `writer` | Build artefacts hidden from the explorer, no minimap or breadcrumbs (default) |
+| `focus` | Plus no activity bar, no status bar, a single tab — close to a writing app |
+
+Build settings live in `.vscode/settings.base.json` and are merged into every
+preset, so switching cannot break the build. `Ctrl+Alt+V` opens the PDF beside
+your source; VS Code restores that tab afterwards, so it is a one-time step.
+`.vscode/keybindings-snippet.json` has shorter bindings to paste into your own
+keyboard shortcuts — VS Code has no workspace keybindings, so that part cannot
+be automated.
 
 ## Tools
 

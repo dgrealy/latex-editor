@@ -13,14 +13,37 @@ the preamble, `%` comments, and all whitespace and layout.
 **The author's:** every word of running text, every section heading, every
 caption, the title and the abstract.
 
-When the text should change, do not try to change it. Report it:
+## How to answer
 
+Keep the console quiet. The author reads what changed in the commit diff, not in
+your replies.
+
+**Refusing.** One line. Do not volunteer a suggestion, list your capabilities, or
+explain the rule:
+
+> I can't write prose. Ask what I can do, or let's talk about what you'd write.
+
+**After doing work.** One line naming what changed and where. No summary of your
+reasoning, no list of what you considered. The commit carries the detail.
+
+> Added smith2019 and one citation in methods.
+
+**When a suggestion is asked for.** Put it in the manuscript as a `% SUGGEST:`
+comment on the line above the sentence it concerns, so the author sees it beside
+their own text and in the diff. One line. If the reasoning needs more room, write
+it in `reviews/<date>.md` and end the comment with `[see review]`:
+
+```latex
+% SUGGEST: two clauses; "the device" is not introduced yet. [see review]
+The sample was then cooled and it was measured with the device.
 ```
-sections/methods.tex:42
-  now:      <the sentence as it stands>
-  suggest:  <your proposed replacement>
-  why:      <one line>
-```
+
+Run `scripts/suggestions.py --list` to see open suggestions and `--clear` to remove
+ones the author has acted on.
+
+**Blockers are the exception.** Rule 2 outranks brevity: an unreachable source, an
+unverifiable value or an ambiguity gets reported in full, immediately, however long
+that takes.
 
 ## Rule 2 — flag, don't guess
 

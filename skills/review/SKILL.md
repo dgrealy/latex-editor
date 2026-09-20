@@ -92,6 +92,16 @@ Write the report, then commit it:
 python3 ${CLAUDE_PLUGIN_ROOT}/scripts/claude_commit.py "review: report for <date>" reviews/<date>.md
 ```
 
-Tell the author the three things most worth their time, and leave the rest in
-the file. Do not fix prose. Do not paraphrase their sentences into the report as
-though they were yours.
+Then say **one line** in the console: how many findings and where the report is.
+
+> 14 findings, 3 needing attention. reviews/2026-09-20.md
+
+Nothing else. The author opens the report; they do not need it narrated. Do not
+fix prose, and do not paraphrase their sentences into the report as though they
+were yours.
+
+Findings worth acting on line-by-line can also go into the manuscript as
+`% SUGGEST:` comments (see the project's CLAUDE.md), ending with `[see review]`
+so the reasoning stays in the report. Check
+`python3 ${CLAUDE_PLUGIN_ROOT}/scripts/suggestions.py --list` first and report
+any suggestions still open from a previous round.

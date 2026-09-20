@@ -1,0 +1,32 @@
+{
+  "latex-workshop.message.badbox.show": false,
+  "latex-workshop.message.update.show": false,
+  "latex-workshop.showContextMenu": false,
+  "files.exclude": {
+    "**/build": true,
+    "**/.latex-editor": true,
+    "**/*.aux": true,
+    "**/*.bbl": true,
+    "**/*.blg": true,
+    "**/*.fdb_latexmk": true,
+    "**/*.fls": true,
+    "**/*.log": true,
+    "**/*.out": true,
+    "**/*.synctex.gz": true,
+    "**/*.toc": true
+  },
+  "editor.minimap.enabled": false,
+  "breadcrumbs.enabled": false,
+  "editor.renderWhitespace": "none",
+  "editor.lineNumbers": "off",
+  "explorer.compactFolders": false,
+  "workbench.editor.enablePreview": false,
+  "workbench.activityBar.location": "hidden",
+  "workbench.statusBar.visible": false,
+  "workbench.editor.showTabs": "single",
+  "window.commandCenter": false,
+  "workbench.layoutControl.enabled": false,
+  "editor.glyphMargin": false,
+  "editor.folding": false,
+  "zenMode.hideLineNumbers": false
+}

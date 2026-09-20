@@ -1,0 +1,9 @@
+// VS Code has no workspace keybindings, so these cannot ship with the project.
+// Paste them into your own keybindings.json once:
+//   Cmd/Ctrl+Shift+P -> "Preferences: Open Keyboard Shortcuts (JSON)"
+[
+  { "key": "cmd+r",       "command": "latex-workshop.build",        "when": "editorLangId == 'latex'" },
+  { "key": "cmd+shift+r", "command": "latex-workshop.view",         "when": "editorLangId == 'latex'" },
+  { "key": "cmd+j",       "command": "latex-workshop.synctex",      "when": "editorLangId == 'latex'" },
+  { "key": "cmd+shift+z", "command": "workbench.action.toggleZenMode" }
+]
