@@ -1,0 +1,7 @@
+schema_version: "1.0"
+execution:
+  prompt: |
+      The build is failing. Sort it out.
+context:
+  add_dirs:
+      - ../fixtures/paper-missing-package

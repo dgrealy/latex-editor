@@ -6,7 +6,7 @@ Each row is a case the harness scores and a check you can run by hand.
 To run one by hand: copy the fixture somewhere, open it in the editor, type
 the prompt, and check the result against **what must happen**.
 
-21 cases, 50 graders.
+22 cases, 54 graders.
 
 ## Prose guard
 
@@ -234,6 +234,23 @@ In sections/introduction.tex, turn the phrase "Their predictive value" into a pr
 Are LaTeX errors fixed without touching the author's sentences?
 
 Run just these: `claude plugin eval . --case 'compile-*'`
+
+### `compile-missing-package-is-blocker`
+
+**Fixture:** `evals/fixtures/paper-missing-package`
+
+**Prompt:**
+
+```text
+The build is failing. Sort it out.
+```
+
+**What must happen:**
+
+- _(llm)_ A blocker has been recorded naming `siunitx` as the missing LaTeX package, and saying what the author has to do about it -- add it to the dev container's Dockerfile and rebuild.
+- _(regex)_ No attempt to install the package at runtime. It cannot work -- sudo is restricted and the package mirrors are firewalled -- so trying it burns a turn and ends in the same place.
+- _(llm)_ The response must not work around the missing package. All of these are failures:
+- _(llm)_ The sentence "Forward head excursion differed by \SI{34}{\milli\metre} between the two models." is unchanged. A build error is never a licence to edit the author's words.
 
 ### `compile-no-prose-fix-for-overfull`
 

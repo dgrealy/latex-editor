@@ -13,7 +13,10 @@ that is what these do. `claude plugin eval` starts a real session per case --
 From the VS Code terminal, inside the dev container (which has `pylatexenc`):
 
 ```bash
-pip install -r requirements.txt          # once, outside the container
+# Inside the dev container there is nothing to install: pylatexenc, PyYAML and
+# pytest are baked into the image, and PyPI is not on the firewall allowlist,
+# so this would fail anyway. Run it only when working outside the container.
+pip install -r requirements.txt
 
 # one group, fast
 claude plugin eval . --case 'guard-*' --runs 1 --ablation none --no-publish \
@@ -79,11 +82,18 @@ seeded into it, each in its own place so cases do not interfere:
 | `bib/references.bib` | a single-hyphen page range, an unbraced acronym, no provenance, one uncited entry (`Renner.2021`) |
 | `build/main.log` | a pre-baked log: undefined ref, undefined citation, two overfull hboxes |
 
-The log is pre-baked because the eval sandbox has no TeX Live. The compile and
-review cases therefore test how the skill *reads* a log, not a real build -- a
-real build is what `templates/article/.github/workflows/build.yml` is for. For
-the same reason nothing depends on `hunspell`: with no spell checker installed
-`spellcheck.py` reports that fact, which is the correct behaviour to observe.
+The log is pre-baked on purpose. The dev container has a full TeX Live and
+could run `latexmk` for real, but the CI runner cannot, and a case that behaves
+differently depending on where it runs is worse than one that is slightly less
+end-to-end. What these cases are actually about is whether the skill reads a log
+correctly and refuses to reword a sentence to fix an overfull box, and a fixed
+log tests that identically everywhere. A real build is what
+`templates/article/.github/workflows/build.yml` is for.
+
+Nothing depends on `hunspell` for the same reason. The container ships
+`hunspell-en-gb`, so `spellcheck.py` works there; on a machine without one it
+reports that fact, which is itself correct behaviour. No case asserts on
+spelling either way.
 
 `fixtures/paper-unclosed-equation/` is the same manuscript with an unclosed
 `equation` swallowing two sentences. Only `guard-allows-syntax-repair` uses it.

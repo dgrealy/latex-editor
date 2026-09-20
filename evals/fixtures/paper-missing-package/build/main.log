@@ -1,0 +1,19 @@
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023)
+entering extended mode
+(./main.tex
+LaTeX2e <2023-11-01>
+(/usr/share/texlive/texmf-dist/tex/latex/base/article.cls
+Document Class: article 2023/05/17 v1.4n Standard LaTeX document class)
+
+! LaTeX Error: File `siunitx.sty' not found.
+
+Type X to quit or <RETURN> to proceed,
+or enter new name. (Default extension: sty)
+
+Enter file name:
+l.9 \usepackage{siunitx}
+                        ^^M
+! Emergency stop.
+l.9 \usepackage{siunitx}
+                        ^^M
+No pages of output.

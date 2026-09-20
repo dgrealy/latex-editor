@@ -1,0 +1,30 @@
+# How this document is built and who owns which part of it.
+project:
+  main: main.tex
+  engine: pdflatex
+  bib: bib/references.bib
+  bib_backend: biber
+
+figures:
+  format: pdf
+  src: figures/src
+  out: figures/out
+  width: 8.4cm
+
+prose:
+  captions: author
+  claude_paths:
+    - bib/**
+    - figures/**
+    - tables/**
+    - frontmatter/**
+    - build/**
+  sentence_per_line: true
+
+git:
+  auto_commit: false
+  prefix: "[claude]"
+
+review:
+  spellcheck: hunspell
+  dict: .latex-editor/dictionary.txt
