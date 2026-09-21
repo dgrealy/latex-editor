@@ -22,6 +22,10 @@ prose:
     - frontmatter/**
     - build/**
   sentence_per_line: true
+  # You may type while Claude works. Costs Claude the ability to replace one of
+  # your .tex files wholesale, since such a write cannot be checked against the
+  # file it actually lands on. Set false if you never write at the same time.
+  parallel: true
 
 git:
   auto_commit: true

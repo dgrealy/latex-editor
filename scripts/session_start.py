@@ -35,10 +35,11 @@ def main() -> None:
     if cfg is None:
         hookio.allow()
 
-    state = session_state.load_state(cfg)
-    state["prose"] = session_state.snapshot(cfg)
-    state.setdefault("pending", [])
-    session_state.save_state(cfg, state)
+    with session_state.transaction(cfg) as state:
+        state["prose"] = session_state.snapshot(cfg)
+        state.setdefault("pending", [])
+        # Approvals belong to the turn that made them; a new session starts with none.
+        state["approved"] = {}
 
     blockers = cfg.root / ".latex-editor" / "blockers.md"
     context = BRIEFING

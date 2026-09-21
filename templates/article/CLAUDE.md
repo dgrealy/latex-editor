@@ -13,6 +13,13 @@ the preamble, `%` comments, and all whitespace and layout.
 **The author's:** every word of running text, every section heading, every
 caption, the title and the abstract.
 
+**The author may be typing while you work.** So edit their `.tex` files with
+Edit, never with a whole-file Write: a Write is checked against the file as it
+is and applied a moment later, and anything they typed in between is gone. Edit
+is anchored to text you have read, so it fails safely instead. To relayout a
+whole file, run `scripts/reflow.py`. Files in `bib/`, `figures/`, `tables/` and
+`frontmatter/` are yours and unaffected.
+
 ## How to answer
 
 Keep the console quiet. The author reads what changed in the commit diff, not in

@@ -48,6 +48,14 @@ def reason(payload: dict) -> str:
     return (payload.get("hookSpecificOutput") or {}).get("permissionDecisionReason", "")
 
 
+def read_state(project: Path) -> dict:
+    return json.loads((project / ".latex-editor" / "state.json").read_text())
+
+
+def audit_log(project: Path) -> str:
+    return (project / ".latex-editor" / "audit.log").read_text()
+
+
 @pytest.fixture
 def project(tmp_path: Path) -> Path:
     """A minimal latex-editor project: the marker file is what switches hooks on."""
@@ -167,6 +175,8 @@ def test_undecidable_edits_are_denied(project, tool_input, expected):
 
 
 def test_write_without_content_is_denied(project):
+    """With parallel writing off, Write is evaluated again -- and still fails closed."""
+    (project / ".latex-editor.yml").write_text("prose:\n  parallel: false\n")
     _, out = run_hook(
         "prose_guard.py",
         {"tool_name": "Write", "cwd": str(project),
@@ -244,7 +254,215 @@ def test_stop_audit_does_not_loop(project):
     session_state.reset(config_module.load(project))
     (project / "sections" / "methods.tex").write_text(SECTION.replace("cooled", "chilled"))
     run_hook("post_tool_audit.py",
-             {"tool_name": "Edit", "cwd": str(project), "tool_input": {}}, project)
+             {"tool_name": "Bash", "cwd": str(project), "tool_input": {"command": "ls"}}, project)
+    assert read_state(project)["pending"], "nothing pending; the test would pass for free"
 
     _, out = run_hook("stop_audit.py", {"cwd": str(project), "stop_hook_active": True}, project)
     assert out.get("decision") != "block"
+
+
+# --- writing in parallel with Claude ----------------------------------------
+
+def test_whole_file_write_to_author_tex_is_refused(project):
+    """A Write is checked against the file as it is and applied a moment later,
+    so anything typed in between is lost. Edit is anchored; Write is not."""
+    _, out = run_hook(
+        "prose_guard.py",
+        {"tool_name": "Write", "cwd": str(project),
+         "tool_input": {"file_path": str(project / "sections" / "methods.tex"),
+                        "content": SECTION}},
+        project,
+    )
+    assert decision(out) == "deny"
+    assert "Use Edit instead" in reason(out)
+
+
+def test_whole_file_write_is_allowed_when_parallel_is_off(project):
+    """An author who never types while Claude works keeps the old behaviour."""
+    (project / ".latex-editor.yml").write_text("prose:\n  parallel: false\n")
+    _, out = run_hook(
+        "prose_guard.py",
+        {"tool_name": "Write", "cwd": str(project),
+         "tool_input": {"file_path": str(project / "sections" / "methods.tex"),
+                        "content": SECTION}},
+        project,
+    )
+    assert decision(out) != "deny"
+
+
+def test_write_to_a_claude_owned_tex_is_untouched(project):
+    """frontmatter/ is Claude's; parallel writing does not narrow that."""
+    (project / "frontmatter").mkdir()
+    target = project / "frontmatter" / "glossary.tex"
+    target.write_text("Some words.\n")
+    _, out = run_hook(
+        "prose_guard.py",
+        {"tool_name": "Write", "cwd": str(project),
+         "tool_input": {"file_path": str(target), "content": "Other words.\n"}},
+        project,
+    )
+    assert decision(out) != "deny"
+
+
+def test_write_to_a_new_tex_is_untouched(project):
+    """A file that does not exist has no author prose to lose."""
+    _, out = run_hook(
+        "prose_guard.py",
+        {"tool_name": "Write", "cwd": str(project),
+         "tool_input": {"file_path": str(project / "sections" / "results.tex"),
+                        "content": SECTION}},
+        project,
+    )
+    assert decision(out) != "deny"
+
+
+def test_author_typing_elsewhere_does_not_block_the_stop(project):
+    """The author edits discussion.tex while Claude cites methods.tex. That is
+    the whole point of the feature, and it must not end the turn in a block."""
+    (project / "sections" / "discussion.tex").write_text(SECTION)
+    session_state.reset(config_module.load(project))
+
+    # The author types, outside any tool call.
+    (project / "sections" / "discussion.tex").write_text(
+        SECTION.replace("cooled", "cooled slowly")
+    )
+    run_hook("post_tool_audit.py",
+             {"tool_name": "Edit", "cwd": str(project),
+              "tool_input": {"file_path": str(project / "sections" / "methods.tex")}},
+             project)
+
+    state = read_state(project)
+    assert state["pending"] == []
+    assert "author edited sections/discussion.tex" in audit_log(project)
+
+    _, out = run_hook("stop_audit.py", {"cwd": str(project)}, project)
+    assert out.get("decision") != "block"
+
+
+def test_prose_landing_in_the_file_a_tool_wrote_still_blocks(project):
+    """The audit must not have been softened into uselessness: prose that appears
+    in the very file a tool just wrote is exactly what it exists to catch."""
+    session_state.reset(config_module.load(project))
+    target = project / "sections" / "methods.tex"
+    target.write_text(SECTION.replace("cooled", "chilled"))
+
+    run_hook("post_tool_audit.py",
+             {"tool_name": "Edit", "cwd": str(project),
+              "tool_input": {"file_path": str(target)}},
+             project)
+
+    assert "sections/methods.tex" in read_state(project)["pending"]
+    _, out = run_hook("stop_audit.py", {"cwd": str(project)}, project)
+    assert out.get("decision") == "block"
+
+
+def test_guard_approved_repair_is_not_reported_as_drift(project):
+    """compare() allows a syntax repair, which recovers author words from markup
+    that was swallowing them. The prose fingerprint changes, legitimately."""
+    target = project / "sections" / "methods.tex"
+    broken = "\\section{Methods}\nThe sample was cooled \\begin{equation} x = 1 and measured.\n"
+    repaired = broken.replace("x = 1 ", "x = 1 \\end{equation} ")
+    target.write_text(broken)
+    session_state.reset(config_module.load(project))
+
+    _, out = run_hook("prose_guard.py",
+                      edit_event(target, "x = 1 ", "x = 1 \\end{equation} ", project), project)
+    assert decision(out) != "deny", reason(out)
+
+    target.write_text(repaired)  # the tool applies the edit the guard just approved
+    run_hook("post_tool_audit.py",
+             {"tool_name": "Edit", "cwd": str(project), "tool_input": {"file_path": str(target)}},
+             project)
+
+    assert read_state(project)["pending"] == []
+    _, out = run_hook("stop_audit.py", {"cwd": str(project)}, project)
+    assert out.get("decision") != "block"
+
+
+def test_a_file_with_no_baseline_digest_is_still_watched(project, monkeypatch):
+    """fingerprint() returns None for a file it cannot read or parse -- and when
+    pylatexenc is missing, for every file. Such a file used to be left out of the
+    baseline, where `previous.get(name, digest)` made it compare equal to itself
+    forever: prose appearing in it was invisible to the audit from then on."""
+    cfg = config_module.load(project)
+    monkeypatch.setattr(session_state, "prose_digest", lambda cfg, text: None)
+    session_state.reset(cfg)
+    monkeypatch.undo()
+    assert read_state(project)["prose"]["sections/methods.tex"] == session_state.UNPARSEABLE
+
+    # The file becomes readable again and the audit must now see its prose.
+    run_hook("post_tool_audit.py",
+             {"tool_name": "Bash", "cwd": str(project), "tool_input": {"command": "ls"}},
+             project)
+    assert "sections/methods.tex" in read_state(project)["pending"]
+
+
+@pytest.mark.parametrize(
+    "path, transient",
+    [
+        (".latex-editor/state.json", True),
+        (".latex-editor/state.lock", True),
+        (".latex-editor/.state.json.4321.tmp", True),
+        # The author's and Claude's real work in the same directory.
+        (".latex-editor/blockers.md", False),
+        (".latex-editor/audit.log", False),
+        (".latex-editor/dictionary.txt", False),
+        ("sections/methods.tex", False),
+        # Same names, wrong place.
+        ("state.lock", False),
+        ("a/.latex-editor/state.lock", False),
+    ],
+)
+def test_is_transient(path, transient):
+    """autocommit asks this before deciding a file is something the author wrote.
+    Projects scaffolded before the lock file existed do not gitignore it, so a
+    wrong answer here puts the guard's bookkeeping in an [author] commit."""
+    assert session_state.is_transient(path) is transient, path
+
+
+def test_autocommit_does_not_record_the_guards_bookkeeping(project):
+    """The provenance record is the point of the whole design: what lands in an
+    [author] commit must be the author's writing and nothing else."""
+    subprocess.run(["git", "init", "-q"], cwd=project, check=True)
+    subprocess.run(["git", "config", "user.email", "a@b.c"], cwd=project, check=True)
+    subprocess.run(["git", "config", "user.name", "Test"], cwd=project, check=True)
+
+    # A session runs, leaving a lock file and state behind beside a real edit.
+    session_state.reset(config_module.load(project))
+    session_state.log(config_module.load(project), "something happened")
+    (project / "sections" / "methods.tex").write_text(SECTION.replace("cooled", "cooled slowly"))
+
+    run_hook("autocommit.py", {"cwd": str(project)}, project)
+
+    # autocommit makes a separate commit per group, so look at all of them.
+    listed = subprocess.run(["git", "log", "--name-only", "--format=", "--all"],
+                            cwd=project, capture_output=True, text=True).stdout.split()
+    assert "sections/methods.tex" in listed
+    assert ".latex-editor/state.json" not in listed
+    assert ".latex-editor/state.lock" not in listed
+
+    messages = subprocess.run(["git", "log", "--format=%s"], cwd=project,
+                              capture_output=True, text=True).stdout
+    assert "[author]" in messages and "[claude]" in messages, messages
+
+
+def test_concurrent_audits_do_not_corrupt_the_state(project):
+    """Two sessions can be open on one manuscript, and three hooks write this file."""
+    session_state.reset(config_module.load(project))
+    (project / "sections" / "methods.tex").write_text(SECTION.replace("cooled", "chilled"))
+
+    event = json.dumps({"tool_name": "Bash", "cwd": str(project),
+                        "tool_input": {"command": "ls"}})
+    running = [
+        subprocess.Popen([sys.executable, str(SCRIPTS / "post_tool_audit.py")],
+                         stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE, text=True, cwd=project)
+        for _ in range(8)
+    ]
+    for proc in running:
+        proc.communicate(event)
+        assert proc.returncode == 0
+
+    state = read_state(project)  # parses at all, and still holds every key
+    assert set(state) >= {"prose", "pending", "approved"}
+    assert "sections/methods.tex" in state["pending"]

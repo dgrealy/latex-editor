@@ -29,6 +29,10 @@ DEFAULTS: dict[str, Any] = {
             "bib/**", "figures/**", "tables/**", "frontmatter/**", "build/**",
         ],
         "sentence_per_line": True,
+        # The author may type while Claude works. Costs a whole-file Write on
+        # the author's .tex, which cannot be checked against the file it will
+        # actually land on.
+        "parallel": True,
     },
     "git": {"auto_commit": True, "prefix": "[claude]"},
     "review": {"spellcheck": "hunspell", "dict": ".latex-editor/dictionary.txt"},
@@ -47,6 +51,10 @@ class Config:
     @property
     def captions_are_prose(self) -> bool:
         return str(self.get("prose", "captions")).lower() != "claude"
+
+    @property
+    def parallel(self) -> bool:
+        return bool(self.get("prose", "parallel"))
 
     @property
     def claude_paths(self) -> list[str]:

@@ -1,5 +1,5 @@
 {
-  "files.autoSave": "off",
+  "files.autoSave": "onFocusChange",
   "latex-workshop.latex.autoBuild.run": "onSave",
   "latex-workshop.latex.recipe.default": "lastUsed",
   "latex-workshop.latex.outDir": "%DIR%/build",
