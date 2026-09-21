@@ -1,10 +1,19 @@
 #!/usr/bin/env python3
 """PostToolUse hook: notice author prose that changed without passing the guard.
 
-Runs after every tool call that could touch a file.  A change here means either
-the author typed something in their editor -- which is entirely their right --
-or something wrote prose without going through the guard.  Either way it is
-recorded, and the Stop hook makes Claude account for it before finishing.
+Runs after every tool call that could touch a file.  A changed file is not by
+itself evidence of anything: the author may be typing in their editor while
+Claude works, which is entirely their right.  So each change is placed:
+
+  * it matches what the guard approved      -- the gate did its job, say nothing
+  * the tool wrote this file, and it doesn't -- something landed that the guard
+                                                did not see; Claude explains it
+  * the tool was Bash, which names no file   -- same, conservatively
+  * nothing here touched it                  -- the author typed; record and move on
+
+Everything is written to the audit log either way.  Only the unexplained goes
+into `pending`, because a Stop hook that blocks on every keystroke is a Stop
+hook the author turns off.
 """
 
 from __future__ import annotations
@@ -25,20 +34,37 @@ def main() -> None:
     if cfg is None:
         hookio.allow()
 
-    state = session_state.load_state(cfg)
-    if not state:
-        session_state.reset(cfg)
-        hookio.allow()
+    tool = event.get("tool_name", "a tool")
+    tool_input = event.get("tool_input") or {}
+    written = session_state.relative(cfg, tool_input.get("file_path") or "")
 
-    changed = session_state.drifted(cfg, state)
-    if changed:
-        tool = event.get("tool_name", "a tool")
-        for name in changed:
-            session_state.log(cfg, f"author prose changed in {name} around a {tool} call")
-        pending = set(state.get("pending", [])) | set(changed)
-        state["pending"] = sorted(pending)
-        state["prose"] = session_state.snapshot(cfg)
-        session_state.save_state(cfg, state)
+    # Nothing calls hookio.allow() inside the transaction: it exits the process,
+    # which would abandon the block before the state is written back.
+    with session_state.transaction(cfg) as state:
+        current = session_state.snapshot(cfg)
+        if not state:
+            state.update({"prose": current, "pending": [], "approved": {}})
+        else:
+            approved = state.setdefault("approved", {})
+            unexplained = []
+
+            for name in session_state.drifted(cfg, state, current):
+                if approved.get(name) is not None and approved[name] == current.get(name):
+                    continue  # exactly what the guard permitted
+                if name == written or tool == "Bash":
+                    session_state.log(cfg, f"author prose changed in {name} around a {tool} call")
+                    unexplained.append(name)
+                else:
+                    session_state.log(cfg, f"author edited {name} in their editor")
+
+            # A tool call settles the approval for the file it named, whether the
+            # write landed or not -- a stale digest must never excuse a later edit.
+            if written:
+                approved.pop(written, None)
+
+            if unexplained:
+                state["pending"] = sorted(set(state.get("pending", [])) | set(unexplained))
+            state["prose"] = current
 
     hookio.allow()
 

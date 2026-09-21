@@ -10,3 +10,5 @@ build/
 *.toc
 figures/build/
 .latex-editor/state.json
+.latex-editor/state.lock
+.latex-editor/.state.json.*.tmp

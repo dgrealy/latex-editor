@@ -24,6 +24,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import config as config_module  # noqa: E402
 import hookio  # noqa: E402
+import session_state  # noqa: E402
 
 AUTHOR_PREFIX = "[author]"
 
@@ -113,7 +114,12 @@ def main() -> None:
 
     groups: dict[str, list[str]] = {"author": [], "claude": []}
     for relative in changed:
+        if session_state.is_transient(relative):
+            continue  # the guard's own bookkeeping, not anybody's writing
         groups["claude" if cfg.owns(root / relative) else "author"].append(relative)
+
+    if not any(groups.values()):
+        hookio.allow()
 
     problems = []
     for group, paths in groups.items():

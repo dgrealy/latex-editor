@@ -84,6 +84,27 @@ The first build takes 10–20 minutes and a few GB; after that it is cached.
 Captions can be handed to Claude with `prose.captions: claude` in
 `.latex-editor.yml`. Which files Claude owns outright is `prose.claude_paths`.
 
+## Writing while Claude works
+
+You do not have to wait. Keep typing while Claude fills in citations and
+references — the guard reads each file as it is on disk at that moment, so words
+you saved a second ago are protected like any others.
+
+Two things make that safe. Claude edits your `.tex` through anchored edits only,
+never a whole-file write, so an edit whose surrounding text you have since
+changed fails instead of overwriting you. And the audit that watches for prose
+changing outside the guard now tells your typing apart from a genuine bypass:
+your edits are recorded in `.latex-editor/audit.log` and otherwise left alone,
+while anything unexplained still stops Claude before it can finish its turn.
+
+The remaining hazard is your editor, not the guard: if a file sits unsaved in
+your editor while Claude adds a `\cite{}` to it, your next save overwrites that.
+New projects set `"files.autoSave": "onFocusChange"` to avoid it. In an existing
+project, add that to `.vscode/settings.json` yourself.
+
+Set `prose.parallel: false` in `.latex-editor.yml` if you never write at the
+same time and would rather Claude kept whole-file writes.
+
 ## The second rule: flag, don't guess
 
 When Claude cannot reach a source, verify a value or resolve an ambiguity, it

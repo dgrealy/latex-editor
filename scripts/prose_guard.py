@@ -17,6 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import config as config_module  # noqa: E402
 import hookio  # noqa: E402
+import session_state  # noqa: E402
 
 EVENT = "PreToolUse"
 
@@ -26,6 +27,18 @@ SUGGEST = (
     "exact file:line, the current sentence and your proposed replacement, and "
     "let the author type it. You may still add or edit \\cite{}, \\ref{}, "
     "\\label{}, maths, tables, figures, algorithms, comments and the preamble."
+)
+
+
+ANCHORLESS = (
+    "You cannot replace a whole .tex file the author writes in. The guard checks "
+    "your content against the file as it is now, but the write lands a moment "
+    "later -- so anything the author typed in between is gone, and neither of you "
+    "would see it happen. Use Edit instead: it is anchored to text you have read, "
+    "so it fails safely if that text has moved. To relayout a whole file, run "
+    "scripts/reflow.py, which verifies it changed no words before writing. Set "
+    "prose.parallel: false in .latex-editor.yml if the author never writes while "
+    "you work."
 )
 
 
@@ -87,6 +100,9 @@ def main() -> None:
     if not path.exists():
         hookio.allow()  # a new file has no author prose to protect
 
+    if tool_name == "Write" and cfg.parallel:
+        hookio.deny(EVENT, ANCHORLESS)
+
     try:
         from prose_stream import compare
     except ImportError as exc:
@@ -109,6 +125,9 @@ def main() -> None:
 
     verdict = compare(current, proposed, captions_are_prose=cfg.captions_are_prose)
     if verdict.allowed:
+        # Tell the audit what we permitted, so what lands on disk can be checked
+        # against it rather than merely noticed as different.
+        session_state.approve(cfg, path, proposed)
         hookio.allow()
     hookio.deny(EVENT, _describe(verdict, raw_path))
 

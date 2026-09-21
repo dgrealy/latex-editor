@@ -254,6 +254,26 @@ def test_reflow_does_not_touch_claude_owned_environments():
 
 # ---------------------------------------------------------------- the template
 
+def test_every_shipped_preset_applies(tmp_path):
+    """new_project.py applies a preset at scaffold time, merging settings.base.json
+    into it. VS Code tolerates comments in these files and json.loads does not, so
+    one stray comment breaks the scaffold of every new document."""
+    import shutil
+    import sys
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    import ui_preset
+
+    template = Path(__file__).resolve().parents[2] / "templates" / "article"
+    shutil.copytree(template / ".vscode", tmp_path / ".vscode")
+
+    names = ui_preset.presets(tmp_path)
+    assert set(names) == {"minimal", "writer", "focus"}, names
+    for name in names:
+        ui_preset.apply(tmp_path, name)
+        assert ui_preset.active(tmp_path) == name
+
+
 def test_the_shipped_template_starts_with_no_author_words():
     """A fresh main.tex must count as empty, or every word count is skewed."""
     template = Path(__file__).resolve().parents[2] / "templates" / "article" / "main.tex"
